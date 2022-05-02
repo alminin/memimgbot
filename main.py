@@ -7,25 +7,38 @@ from aiogram import Bot, Dispatcher, executor, types
 API_TOKEN = config("TOKEN")
 
 # Configure logging
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    )
 
 # Initialize bot and dispatcher
 bot = Bot(token=API_TOKEN)
 dp = Dispatcher(bot)
 
-@dp.message_handler(commands=['start', 'help'])
+@dp.message_handler(commands=['start'])
 async def send_welcome(message: types.Message):
     """
-    This handler will be called when user sends `/start` or `/help` command
+    This handler will be called when user sends `/start` command
     """
-    await message.reply("Hi!\nI'm EchoBot!\nPowered by aiogram.")
+    await message.reply("Hi!\nLet's make a meme out of your photo!")
 
-@dp.message_handler()
-async def echo(message: types.Message):
-    # old style:
-    # await bot.send_message(message.chat.id, message.text)
+@dp.message_handler(content_types=['photo'])
+async def change_image(message: types.Message):
+    '''
+    This handler will be called when user sends image.
+    And it change incoming image
+    '''
+    await message.reply('Doing my magic!')
 
-    await message.answer(message.text)
+# @dp.message_handler()
+# async def echo(message: types.Message):
+#     # old style:
+#     # await bot.send_message(message.chat.id, message.text)
+
+#     await message.answer(message.text)
+
+
 
 if __name__ == '__main__':
     executor.start_polling(dp, skip_updates=True)
