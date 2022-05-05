@@ -1,14 +1,14 @@
 import logging
 from decouple import config
 import os
-from datetime import datetime
 
 from aiogram import Bot, Dispatcher, executor, types
 from PIL import Image, ImageDraw, ImageFont
 
 
 API_TOKEN = config('TOKEN')
-IMAGES_DIR = 'images/'
+IMAGES_DIR = config('IMAGES_DIR')
+FONT = config('FONT')
 REPOST_CHANNEL = config('REPOST_CHANNEL')
 
 # Configure logging
@@ -25,7 +25,7 @@ def make_caption(filepath, text):
     '''Make caption on received photo'''
     image = Image.open(filepath)
     draw = ImageDraw.Draw(image)
-    font = ImageFont.truetype('Lobster-Regular.ttf', size=70, encoding="utf-8")
+    font = ImageFont.truetype(FONT, size=70, encoding="utf-8")
     width_image, height_image = image.size
     width_text, height_text = draw.textsize(text, font=font)
     draw.text(
@@ -60,12 +60,11 @@ def get_user_img(user_id):
         if file.startswith(f"{user_id}"):
             return os.path.join(IMAGES_DIR, file)
 
-def gen_markup():
+def gen_kb():
     '''Generate inline keyboard for share image'''
-    markup = types.InlineKeyboardMarkup()
-    markup.row_width = 1
-    markup.add(types.InlineKeyboardButton("Поделиться", callback_data="share_this"))
-    return markup
+    kb = types.InlineKeyboardMarkup(row_width=1)
+    kb.add(types.InlineKeyboardButton("Поделиться", callback_data="share_this"))
+    return kb
 
 async def on_startup(_):
     print('Bot is online')
@@ -102,7 +101,7 @@ async def change_image(message: types.Message):
     img_path = get_user_img(user_id)
     make_caption(img_path, caption)
     with open(img_path, 'rb') as f:
-        await message.answer_photo(f, reply_markup=gen_markup())
+        await message.answer_photo(f, reply_markup=gen_kb())
     os.remove(img_path)
 
 @dp.callback_query_handler(lambda callback_query: True)
